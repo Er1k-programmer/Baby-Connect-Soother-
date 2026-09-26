@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Learning App</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:#f7f7f7; font-family:Arial,sans-serif; overflow:auto;
+}
+.toy{
+  width:min(94vw,720px); min-height:620px; padding:28px 24px 24px;
+  background:linear-gradient(#fafafa,#eeeeee); border-radius:42px;
+  border:4px solid #ddd; position:relative;
+  box-shadow:0 12px 35px #0002;
+}
+.arch{
+  height:92px; width:72%; margin:-22px auto 8px; border-radius:0 0 70px 70px;
+  background:#82c94a; border:4px solid #6faf3c; position:relative;
+}
+.arch:after{
+  content:""; position:absolute; width:110px;height:32px; left:50%;top:-8px;
+  transform:translateX(-50%); background:#f44343; border-radius:50%;
+  border:3px solid #c93434;
+}
+.screen{
+  width:78%; margin:0 auto 22px; background:#555; border:5px solid #777;
+  border-radius:34px; padding:18px; min-height:290px; position:relative;
+}
+.screen-inner{
+  background:linear-gradient(#48b8f2,#1684dc); border-radius:12px;
+  min-height:245px; padding:18px; display:flex; align-items:center; justify-content:center;
+}
+.menu{
+  width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+}
+button{
+  border:0; border-radius:18px; min-height:88px; font-size:38px; cursor:pointer;
+  box-shadow:0 5px 0 #0002; transition:.12s transform;
+}
+button:active{transform:translateY(4px);box-shadow:0 1px 0 #0002}
+.b1{background:#ffb52e}.b2{background:#ffd84a}.b3{background:#ff8c8c}
+.b4{background:#72d9a0}.b5{background:#8ed8ff}.b6{background:#bda0ff}
+.bottom{
+  width:48%; height:105px; margin:0 auto; background:#78c8e8;
+  border-radius:55% 55% 25px 25px; border:4px solid #589fbd;
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+}
+.side{
+  position:absolute; top:245px; width:64px; display:flex; flex-direction:column; gap:18px;
+}
+.side.left{left:8px}.side.right{right:8px}
+.side span{height:55px;border-radius:50%;background:#8bd34d;border:3px solid #6eb43b}
+.modal{
+  position:fixed; inset:0; background:#0008; display:none; align-items:center;
+  justify-content:center; padding:20px; z-index:10;
+}
+.modal.show{display:flex}
+.card{
+  width:min(92vw,430px); background:white; border-radius:26px; padding:24px;
+  text-align:center; box-shadow:0 15px 50px #0005;
+}
+.card h2{margin-top:0}
+.card button{min-height:58px;font-size:20px;margin:7px;padding:0 20px}
+input[type=file]{display:none}
+.player{width:100%}
+#night{
+  position:fixed; inset:0; background:rgba(255,196,48,.88); display:none;
+  z-index:20; align-items:center; justify-content:center; flex-direction:column;
+}
+#night.show{display:flex}
+.lamp{
+  width:170px;height:170px;border-radius:50%;background:#fff2a8;
+  box-shadow:0 0 90px 45px #fff1a8; display:flex;align-items:center;
+  justify-content:center;font-size:75px;
+}
+#night button{margin-top:55px;background:white;min-height:58px;font-size:20px;padding:0 24px}
+.pdfbox{width:100%;height:380px;border:2px solid #ddd;border-radius:14px;overflow:auto;background:#fafafa}
+iframe{width:100%;height:100%;border:0}
+.small{color:#666;font-size:14px}
+@media(max-width:520px){
+ .toy{min-height:570px;padding:20px 12px}
+ .screen{width:88%;padding:12px;min-height:250px}
+ .screen-inner{min-height:205px}
+ .menu{gap:9px}
+ button{min-height:72px;font-size:31px}
+ .bottom{width:55%;height:85px}
+ .side{display:none}
+}
+
+#babyBookReader{
+  position:fixed; inset:0; z-index:100; display:none; flex-direction:column;
+  background:#74c9ed; font-family:Arial,sans-serif;
+}
+#babyBookReader.open{display:flex}
+.babyBookTop{
+  min-height:58px; background:#ffffffdd; display:flex; align-items:center;
+  gap:8px; padding:8px 10px; font-weight:bold; font-size:16px;
+}
+.babyBookTop div{flex:1;text-align:center}
+.babyBookTop button{
+  min-height:42px; border:0; border-radius:12px; background:#ffd84a;
+  color:#222; font-size:16px; padding:0 11px; box-shadow:0 3px 0 #0002;
+}
+.babyBookCounter{
+  background:#ffffffcc; text-align:center; padding:5px; font-weight:bold;
+}
+.babyBookImageArea{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; touch-action:none; padding:10px;
+}
+#babyBookImage{
+  max-width:100%; max-height:100%; object-fit:contain;
+  border-radius:4px; box-shadow:0 3px 15px #0004; user-select:none;
+}
+
+
+#pdfReader{
+  position:absolute;inset:0;z-index:8;background:linear-gradient(#48b8f2,#1684dc);
+  display:none;flex-direction:column;border-radius:12px;overflow:hidden;
+}
+#pdfReader.open{display:flex}
+.pdfBar{
+  height:44px;min-height:44px;background:rgba(20,110,200,.88);
+  display:flex;align-items:center;gap:5px;padding:4px;color:#fff;
+}
+.pdfBar button{
+  border:0;border-radius:9px;background:#fff;color:#1674bd;font-weight:bold;
+  font-size:14px;padding:5px 9px;min-height:34px;box-shadow:none;
+}
+.pdfName{
+  flex:1;text-align:center;font-size:18px;font-weight:bold;
+}
+#learningMenu{
+  flex:1;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;padding:18px;align-items:center;
+}
+.learnBtn{
+  border:0;border-radius:20px;min-height:125px;
+  font-size:48px;box-shadow:0 5px 0 #0002;cursor:pointer;
+}
+.learnBtn span{font-size:17px;font-weight:bold}
+.numbersBtn{background:#ffd84a}
+.colorsBtn{background:#8de0a8}
+.animalsBtn{background:#c4a0ff}
+#learningContent{
+  display:none;position:absolute;inset:44px 0 0;
+  background:linear-gradient(#48b8f2,#1684dc);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:14px;
+}
+#learningContent.open{display:flex}
+#learnBack{
+  position:absolute;left:8px;top:8px;border:0;border-radius:10px;
+  background:#fff;color:#1674bd;font-size:22px;padding:5px 10px;
+}
+#learningTitle{
+  font-size:22px;font-weight:bold;color:#fff;
+  margin:0 0 14px;text-shadow:1px 1px 2px #176;
+}
+#learningItems{
+  width:100%;display:flex;align-items:center;justify-content:center;
+}
+.learnItem{
+  width:180px;height:180px;background:#fff;border-radius:35px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:100px;box-shadow:0 7px 0 #0002;
+}
+.learnItem.color{font-size:105px}
+.learnItem.animal{font-size:105px}
+@media(max-width:520px){
+  #learnCategories,#learnChoices{grid-template-columns:repeat(2,1fr);gap:9px}
+  .learnCategory,.learnChoice{min-height:76px;font-size:34px}
+}
+</style>
+</head>
+<body>
+<div class="toy">
+  <div class="arch"></div>
+  <div class="side left"><span></span><span></span><span></span></div>
+  <div class="side right"><span></span><span></span><span></span></div>
+
+  <div class="screen">
+    <div class="screen-inner">
+      <div class="menu">
+        <button class="b1" id="videoBtn" aria-label="Videos">📺</button>
+        <button class="b2" id="photoBtn" aria-label="Photos">🖼️</button>
+        <button class="b3" id="meetBtn" aria-label="Google Meet">📞</button>
+        <button class="b4" id="audioBtn" aria-label="Audio">🎵</button>
+        <button class="b5" id="nightBtn" aria-label="Night Light">🌙</button>
+        <button class="b6" id="pdfBtn" aria-label="Learn">🔍</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom">👶</div>
+</div>
+
+<input id="videoInput" type="file" accept="video/*">
+<input id="photoInput" type="file" accept="image/*" multiple>
+<input id="audioInput" type="file" accept="audio/*">
+
+
+<div id="pdfReader">
+  <div class="pdfBar">
+    <button id="pdfBack">🏠</button>
+    <div class="pdfName" id="pdfName">Learn</div>
+  </div>
+
+  <div id="learningMenu">
+    <button class="learnBtn numbersBtn" id="numbersBtn">🔢<br><span>Numbers</span></button>
+    <button class="learnBtn colorsBtn" id="colorsBtn">🎨<br><span>Colors</span></button>
+    <button class="learnBtn animalsBtn" id="animalsBtn">🐾<br><span>Animals</span></button>
+  </div>
+
+  <div id="learningContent">
+    <button id="learnBack">←</button>
+    <div id="learningTitle"></div>
+    <div id="learningItems"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="mediaModal">
+  <div class="card">
+    <h2 id="mediaTitle"></h2>
+    <div id="mediaContent"></div>
+    <button id="closeMedia">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="meetModal">
+  <div class="card">
+    <h2>Enter Google Meet?</h2>
+    <p>First solve the sum:</p>
+    <p><strong style="font-size:34px">3 + 2 = ?</strong></p>
+    <input id="sumInput" type="number" inputmode="numeric" style="font-size:28px;width:130px;text-align:center;padding:8px;border-radius:12px;border:2px solid #aaa">
+    <p id="sumMessage" class="small"></p>
+    <button id="sumOk">Continue</button>
+    <button id="sumCancel">Cancel</button>
+  </div>
+</div>
+
+<div id="night">
+  <div class="lamp">🌙</div>
+  <h2>Night Light</h2>
+  <button id="nightClose">Turn off</button>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const mediaModal=$("mediaModal"), mediaTitle=$("mediaTitle"), mediaContent=$("mediaContent");
+
+function openMedia(title, content){
+  mediaTitle.textContent=title;
+  mediaContent.innerHTML="";
+  mediaContent.appendChild(content);
+  mediaModal.classList.add("show");
+}
+$("closeMedia").onclick=()=>mediaModal.classList.remove("show");
+
+$("videoBtn").onclick=()=>{$("videoInput").click()};
+$("videoInput").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const v=document.createElement("video"); v.controls=true; v.autoplay=true; v.className="player";
+  v.src=URL.createObjectURL(f); openMedia("Video Player",v);
+  e.target.value="";
+};
+
+$("photoBtn").onclick=()=>{$("photoInput").click()};
+$("photoInput").onchange=e=>{
+  const files=[...e.target.files]; if(!files.length)return;
+  const wrap=document.createElement("div");
+  wrap.style.display="grid"; wrap.style.gridTemplateColumns="repeat(2,1fr)"; wrap.style.gap="8px";
+  files.slice(0,20).forEach(f=>{
+    const img=document.createElement("img"); img.src=URL.createObjectURL(f);
+    img.style.width="100%"; img.style.borderRadius="12px"; wrap.appendChild(img);
+  });
+  openMedia("Photo Selector",wrap); e.target.value="";
+};
+
+$("audioBtn").onclick=()=>{$("audioInput").click()};
+$("audioInput").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const wrap=document.createElement("div");
+  const p=document.createElement("p"); p.textContent=f.name;
+  const a=document.createElement("audio"); a.controls=true; a.autoplay=true; a.className="player";
+  a.src=URL.createObjectURL(f); wrap.append(p,a);
+  openMedia("Audio Player",wrap); e.target.value="";
+};
+
+$("nightBtn").onclick=()=>$("night").classList.add("show");
+$("nightClose").onclick=()=>$("night").classList.remove("show");
+
+
+const pdfReader=$("pdfReader");
+const learningMenu=$("learningMenu");
+const learningContent=$("learningContent");
+const learningTitle=$("learningTitle");
+const learningItems=$("learningItems");
+
+const learningData={
+  numbers:{
+    items:[
+      {emoji:"1️⃣",name:"One"},
+      {emoji:"2️⃣",name:"Two"},
+      {emoji:"3️⃣",name:"Three"},
+      {emoji:"4️⃣",name:"Four"},
+      {emoji:"5️⃣",name:"Five"}
+    ],
+    cls:""
+  },
+  colors:{
+    items:[
+      {emoji:"🔴",name:"Red"},
+      {emoji:"🟠",name:"Orange"},
+      {emoji:"🟡",name:"Yellow"},
+      {emoji:"🟢",name:"Green"},
+      {emoji:"🔵",name:"Blue"},
+      {emoji:"🟣",name:"Purple"}
+    ],
+    cls:"color"
+  },
+  animals:{
+    items:[
+      {emoji:"🦒",name:"Giraffe"},
+      {emoji:"🐘",name:"Elephant"},
+      {emoji:"🐧",name:"Penguin"},
+      {emoji:"🐊",name:"Crocodile"},
+      {emoji:"🐬",name:"Dolphin"},
+      {emoji:"🦋",name:"Butterfly"},
+      {emoji:"🐪",name:"Camel"},
+      {emoji:"🦓",name:"Zebra"},
+      {emoji:"🐈",name:"Cat"},
+      {emoji:"🐕",name:"Dog"}
+    ],
+    cls:"animal"
+  }
+};
+
+function openLearning(){
+  pdfReader.classList.add("open");
+  learningMenu.style.display="grid";
+  learningContent.classList.remove("open");
+}
+
+function showLearning(type){
+  const data=learningData[type];
+  learningMenu.style.display="none";
+  learningItems.innerHTML="";
+
+  // Al pulsar una categoría aparece un único elemento y su nombre.
+  const item=data.items[Math.floor(Math.random()*data.items.length)];
+  learningTitle.textContent=item.name;
+
+  const el=document.createElement("div");
+  el.className="learnItem "+data.cls;
+  el.textContent=item.emoji;
+  learningItems.appendChild(el);
+
+  learningContent.classList.add("open");
+}
+
+$("pdfBtn").onclick=()=>openLearning();
+
+$("numbersBtn").onclick=()=>showLearning("numbers");
+$("colorsBtn").onclick=()=>showLearning("colors");
+$("animalsBtn").onclick=()=>showLearning("animals");
+
+$("learnBack").onclick=()=>{
+  learningContent.classList.remove("open");
+  learningMenu.style.display="grid";
+};
+
+$("pdfBack").onclick=()=>{
+  pdfReader.classList.remove("open");
+  learningContent.classList.remove("open");
+  learningMenu.style.display="grid";
+};
+
+$("meetBtn").onclick=()=>{
+  $("sumInput").value="";
+  $("sumMessage").textContent="";
+  $("meetModal").classList.add("show");
+  setTimeout(()=>$("sumInput").focus(),100);
+};
+
+$("sumCancel").onclick=()=>{
+  $("meetModal").classList.remove("show");
+};
+
+$("sumOk").onclick=()=>{
+  if(Number($("sumInput").value)===5){
+    $("sumMessage").textContent="¡Correcto!";
+    setTimeout(()=>{
+      $("meetModal").classList.remove("show");
+      window.open("https://meet.google.com/","_blank");
+    },500);
+  }else{
+    $("sumMessage").textContent="Inténtalo de nuevo.";
+  }
+};
+
+</script>
+</body>
+</html>
